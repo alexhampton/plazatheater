@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="View weekly Plaza Theatre showtimes, special screenings, and upcoming events in Miamisburg."
+    />
+    <title>Showtimes | Plaza Theatre</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="top-banner" role="note">Movie Tickets Are Always $5</div>
+      <div class="header-shell">
+        <a class="brand" href="index.html" aria-label="Plaza Theatre Home">
+          <span class="brand-mark">PLAZA</span>
+          <span class="brand-sub">Historic Theatre</span>
+        </a>
+        <button class="menu-button" aria-expanded="false" aria-controls="primary-nav">
+          Menu
+        </button>
+        <nav id="primary-nav" class="primary-nav" aria-label="Primary">
+          <a href="showtimes.html">Showtimes</a>
+          <a href="series.html">Series</a>
+          <a href="visit.html">Visit</a>
+          <a href="support.html">Support</a>
+          <a href="rentals.html">Rentals</a>
+          <a class="button ghost" href="support.html#volunteer">Volunteer</a>
+          <a class="button primary" href="https://app.formovietickets.com/index.html?id=plazatheatre">Buy Tickets</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section class="page-hero reveal" aria-labelledby="showtimes-page-title">
+        <p class="eyebrow">Weekly Schedule</p>
+        <h1 id="showtimes-page-title">Showtimes Made Easy</h1>
+        <p>
+          Tickets are first come, first served unless otherwise noted. Arrive 30 minutes early for ticket pickup,
+          seating, and concessions.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="https://app.formovietickets.com/index.html?id=plazatheatre">Purchase Tickets</a>
+          <a class="button secondary" href="#special-events">Jump To Special Events</a>
+        </div>
+      </section>
+
+      <section class="section reveal" aria-labelledby="this-week-title">
+        <div class="section-head">
+          <p class="eyebrow">Current Listings</p>
+          <h2 id="this-week-title">This Week At The Plaza</h2>
+        </div>
+        <ul class="timeline">
+          <li>
+            <span class="slot">Wednesday 4:00 PM</span>
+            <div>
+              <h3>The Sheep Detectives (2026)</h3>
+              <p>Main feature screening.</p>
+            </div>
+          </li>
+          <li>
+            <span class="slot">Wednesday 7:00 PM</span>
+            <div>
+              <h3>Century of Cinema: Twister (1996)</h3>
+              <p>Hosted feature presentation with local sponsor support.</p>
+            </div>
+          </li>
+          <li>
+            <span class="slot">Thursday 4:00 PM & 7:00 PM</span>
+            <div>
+              <h3>The Sheep Detectives (2026)</h3>
+              <p>Afternoon and evening screenings.</p>
+            </div>
+          </li>
+          <li>
+            <span class="slot">Friday 4:00 PM</span>
+            <div>
+              <h3>The Wizard of Oz</h3>
+              <p>Classic presentation.</p>
+            </div>
+          </li>
+          <li>
+            <span class="slot">Friday 7:00 PM</span>
+            <div>
+              <h3>Mercy (2026)</h3>
+              <p>Evening feature screening.</p>
+            </div>
+          </li>
+          <li>
+            <span class="slot">Saturday 4:00 PM</span>
+            <div>
+              <h3>Mercy (2026)</h3>
+              <p>Weekend matinee.</p>
+            </div>
+          </li>
+          <li>
+            <span class="slot">Saturday 7:00 PM</span>
+            <div>
+              <h3>The Wizard of Oz</h3>
+              <p>Saturday evening classic screening.</p>
+            </div>
+          </li>
+          <li>
+            <span class="slot">Sunday 1:30 PM</span>
+            <div>
+              <h3>The Wizard of Oz</h3>
+              <p>Sunday matinee.</p>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <section class="section reveal" id="special-events" aria-labelledby="special-events-title">
+        <div class="section-head">
+          <p class="eyebrow">Coming Up</p>
+          <h2 id="special-events-title">Special Events</h2>
+        </div>
+        <div class="cards">
+          <article class="show-card">
+            <h3>25 Cent Movie</h3>
+            <p>Sat, May 9 at 12:30 PM</p>
+            <p>Pirates of the Caribbean: The Curse of the Black Pearl</p>
+          </article>
+          <article class="show-card">
+            <h3>Kids Series</h3>
+            <p>Wed, June 3 at 11:00 AM</p>
+            <p>The Lion King (1994), $1 ticket and free book.</p>
+          </article>
+          <article class="show-card">
+            <h3>Live Event</h3>
+            <p>Sun, Aug 16 at 7:00 PM</p>
+            <p>Karen Rontowski - The Original Psychic Standup.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <a class="mobile-sticky-cta" href="https://app.formovietickets.com/index.html?id=plazatheatre">Buy Tickets</a>
+
+    <footer class="site-footer">
+      <p>Historic Plaza Theatre | 33 S Main St, Miamisburg, OH 45342</p>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="series.html">Programs</a>
+        <a href="support.html">Support</a>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
