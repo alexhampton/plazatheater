@@ -83,6 +83,71 @@ const formatEventSlot = (dateValue) => {
   return `${dayLabel} | ${timeLabel}`;
 };
 
+const formatEventTime = (dateValue) => {
+  const eventDate = new Date(dateValue);
+  if (Number.isNaN(eventDate.getTime())) {
+    return '';
+  }
+
+  return eventDate.toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+};
+
+const toLocalDateKey = (dateValue) => {
+  const eventDate = new Date(dateValue);
+  if (Number.isNaN(eventDate.getTime())) {
+    return '';
+  }
+
+  const year = eventDate.getFullYear();
+  const month = String(eventDate.getMonth() + 1).padStart(2, '0');
+  const day = String(eventDate.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const formatDateFromKey = (dateKey, options) => {
+  const parsedDate = new Date(`${dateKey}T12:00:00`);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return dateKey;
+  }
+
+  return parsedDate.toLocaleDateString(undefined, options);
+};
+
+const parseMonthKey = (monthKey) => {
+  const [yearRaw, monthRaw] = monthKey.split('-');
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  if (!year || !month) {
+    return null;
+  }
+
+  return { year, month };
+};
+
+const buildDayBuckets = (events) => {
+  const dayMap = new Map();
+  events.forEach((event) => {
+    const dayKey = toLocalDateKey(event.start);
+    if (!dayKey) {
+      return;
+    }
+
+    if (!dayMap.has(dayKey)) {
+      dayMap.set(dayKey, []);
+    }
+    dayMap.get(dayKey).push(event);
+  });
+
+  dayMap.forEach((items) => {
+    items.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+  });
+
+  return dayMap;
+};
+
 const flattenSchedule = (months) => {
   if (!Array.isArray(months)) {
     return [];
@@ -259,6 +324,7 @@ if (scheduleData) {
     showtimesTimeline.innerHTML = upcomingNowShowing.length
       ? upcomingNowShowing
           .map((item) => {
+            const eventDayKey = toLocalDateKey(item.start);
             const monthDivider =
               item.monthKey !== lastMonthKey
                 ? `<li class="month-divider"><span>${item.monthLabel}</span></li>`
@@ -267,7 +333,7 @@ if (scheduleData) {
 
             return `
           ${monthDivider}
-          <li>
+          <li class="timeline-entry" data-day-key="${eventDayKey}">
             <span class="slot">${formatEventSlot(item.start)}</span>
             <div>
               ${buildCategoryBadge(item.category)}
@@ -279,6 +345,278 @@ if (scheduleData) {
           })
           .join('')
       : '<li class="empty-state">No upcoming feature showtimes are posted yet.</li>';
+  }
+
+  if (isShowtimesPage && showtimesTimeline) {
+    const showtimesViewToggle = document.getElementById('showtimes-view-toggle');
+    const showtimesCalendarWrap = document.getElementById('showtimes-calendar-wrap');
+    const showtimesCalendarGrid = document.getElementById('showtimes-calendar-grid');
+    const showtimesDayDetails = document.getElementById('showtimes-day-details');
+    const showtimesCalendarNav = document.getElementById('showtimes-calendar-nav');
+    const calendarMonthLabel = document.getElementById('calendar-month-label');
+    const prevMonthButton = document.getElementById('calendar-prev-month');
+    const nextMonthButton = document.getElementById('calendar-next-month');
+
+    if (
+      showtimesViewToggle &&
+      showtimesCalendarWrap &&
+      showtimesCalendarGrid &&
+      showtimesDayDetails &&
+      showtimesCalendarNav &&
+      calendarMonthLabel &&
+      prevMonthButton &&
+      nextMonthButton
+    ) {
+      const storageKey = 'plazaShowtimesView';
+      const monthKeys = [...new Set(upcomingNowShowing.map((event) => event.monthKey).filter(Boolean))];
+      const dayBuckets = buildDayBuckets(upcomingNowShowing);
+
+      let currentMonthIndex = 0;
+      let selectedDateKey = upcomingNowShowing.length ? toLocalDateKey(upcomingNowShowing[0].start) : '';
+
+      if (selectedDateKey) {
+        const selectedMonth = selectedDateKey.slice(0, 7);
+        const matchingMonthIndex = monthKeys.indexOf(selectedMonth);
+        if (matchingMonthIndex >= 0) {
+          currentMonthIndex = matchingMonthIndex;
+        }
+      }
+
+      const getIsMobile = () => window.matchMedia('(max-width: 768px)').matches;
+      let currentView = 'list';
+
+      const setToggleState = (nextView) => {
+        const toggleButtons = showtimesViewToggle.querySelectorAll('.toggle-option');
+        toggleButtons.forEach((button) => {
+          const isActive = button.dataset.viewMode === nextView;
+          button.classList.toggle('is-active', isActive);
+          button.setAttribute('aria-pressed', String(isActive));
+        });
+      };
+
+      const applyListDateHighlight = () => {
+        const timelineEntries = showtimesTimeline.querySelectorAll('.timeline-entry[data-day-key]');
+        timelineEntries.forEach((entry) => {
+          const isSelected = selectedDateKey && entry.getAttribute('data-day-key') === selectedDateKey;
+          entry.classList.toggle('is-selected-date', isSelected);
+        });
+      };
+
+      const renderDayDetails = () => {
+        if (!selectedDateKey) {
+          showtimesDayDetails.innerHTML = '<p>Select a date to preview showtimes.</p>';
+          return;
+        }
+
+        const dayEvents = dayBuckets.get(selectedDateKey) || [];
+        const dayHeading = formatDateFromKey(selectedDateKey, {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric'
+        });
+
+        if (!dayEvents.length) {
+          showtimesDayDetails.innerHTML = `<h3>${dayHeading}</h3><p>No feature showtimes posted for this date.</p>`;
+          return;
+        }
+
+        showtimesDayDetails.innerHTML = `
+          <h3>${dayHeading}</h3>
+          <ul class="day-details-list">
+            ${dayEvents
+              .map(
+                (event) => `
+                  <li class="day-details-item">
+                    <p class="day-details-time">${formatEventTime(event.start)}</p>
+                    ${buildCategoryBadge(event.category)}
+                    <h4>${event.title}</h4>
+                    <p>${event.note || ''}</p>
+                    <a class="button secondary" href="${scheduleData.ticketUrl}">Tickets</a>
+                  </li>
+                `
+              )
+              .join('')}
+          </ul>
+        `;
+      };
+
+      const selectDate = (dateKey) => {
+        selectedDateKey = dateKey;
+        renderCalendar();
+        renderDayDetails();
+        applyListDateHighlight();
+      };
+
+      const renderCalendar = () => {
+        if (!monthKeys.length) {
+          calendarMonthLabel.textContent = 'No Upcoming Dates';
+          showtimesCalendarGrid.innerHTML = '<p class="empty-state">No upcoming feature showtimes are posted yet.</p>';
+          prevMonthButton.disabled = true;
+          nextMonthButton.disabled = true;
+          return;
+        }
+
+        const currentMonthKey = monthKeys[currentMonthIndex];
+        const parsedMonth = parseMonthKey(currentMonthKey);
+        if (!parsedMonth) {
+          return;
+        }
+
+        const monthStart = new Date(parsedMonth.year, parsedMonth.month - 1, 1);
+        const daysInMonth = new Date(parsedMonth.year, parsedMonth.month, 0).getDate();
+        const firstWeekday = monthStart.getDay();
+        const todayKey = toLocalDateKey(new Date());
+        calendarMonthLabel.textContent = formatDateFromKey(`${currentMonthKey}-01`, {
+          month: 'long',
+          year: 'numeric'
+        });
+
+        const calendarCells = [];
+
+        for (let i = 0; i < firstWeekday; i += 1) {
+          calendarCells.push('<span class="calendar-cell is-empty" aria-hidden="true"></span>');
+        }
+
+        for (let day = 1; day <= daysInMonth; day += 1) {
+          const dayKey = `${currentMonthKey}-${String(day).padStart(2, '0')}`;
+          const dayEvents = dayBuckets.get(dayKey) || [];
+          const hasEvents = dayEvents.length > 0;
+          const isSelected = selectedDateKey === dayKey;
+          const isToday = todayKey === dayKey;
+          const labelDate = formatDateFromKey(dayKey, {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+          });
+          const countLabel = hasEvents
+            ? `${dayEvents.length} ${dayEvents.length === 1 ? 'showtime' : 'showtimes'}`
+            : 'No showtimes';
+
+          calendarCells.push(`
+            <button
+              type="button"
+              class="calendar-cell${hasEvents ? ' has-events' : ''}${isSelected ? ' is-selected' : ''}${isToday ? ' is-today' : ''}"
+              data-day-key="${dayKey}"
+              aria-label="${labelDate}. ${countLabel}."
+            >
+              <span class="calendar-day-number">${day}</span>
+              <span class="calendar-count">${countLabel}</span>
+            </button>
+          `);
+        }
+
+        showtimesCalendarGrid.setAttribute('aria-label', `Showtimes calendar for ${calendarMonthLabel.textContent}`);
+        showtimesCalendarGrid.innerHTML = calendarCells.join('');
+        prevMonthButton.disabled = currentMonthIndex === 0;
+        nextMonthButton.disabled = currentMonthIndex === monthKeys.length - 1;
+      };
+
+      const updateMonthSelection = (nextIndex) => {
+        if (nextIndex < 0 || nextIndex > monthKeys.length - 1) {
+          return;
+        }
+
+        currentMonthIndex = nextIndex;
+        const activeMonthKey = monthKeys[currentMonthIndex];
+        const eventsInMonth = upcomingNowShowing.filter((event) => event.monthKey === activeMonthKey);
+        selectedDateKey = eventsInMonth.length ? toLocalDateKey(eventsInMonth[0].start) : `${activeMonthKey}-01`;
+        renderCalendar();
+        renderDayDetails();
+        applyListDateHighlight();
+      };
+
+      const applyView = (requestedView, persist = true) => {
+        const normalizedView = getIsMobile() ? 'list' : requestedView;
+        currentView = normalizedView;
+
+        const showCalendar = normalizedView === 'calendar';
+        showtimesCalendarWrap.classList.toggle('is-hidden', !showCalendar);
+        showtimesCalendarNav.classList.toggle('is-hidden', !showCalendar);
+        showtimesTimeline.classList.toggle('is-hidden', showCalendar);
+        setToggleState(normalizedView);
+
+        if (persist) {
+          localStorage.setItem(storageKey, normalizedView);
+        }
+      };
+
+      showtimesViewToggle.addEventListener('click', (event) => {
+        const button = event.target.closest('.toggle-option');
+        if (!button) {
+          return;
+        }
+        const nextView = button.dataset.viewMode === 'calendar' ? 'calendar' : 'list';
+        applyView(nextView);
+      });
+
+      prevMonthButton.addEventListener('click', () => {
+        updateMonthSelection(currentMonthIndex - 1);
+      });
+
+      nextMonthButton.addEventListener('click', () => {
+        updateMonthSelection(currentMonthIndex + 1);
+      });
+
+      showtimesCalendarGrid.addEventListener('click', (event) => {
+        const cell = event.target.closest('.calendar-cell[data-day-key]');
+        if (!cell) {
+          return;
+        }
+        selectDate(cell.getAttribute('data-day-key'));
+      });
+
+      showtimesCalendarGrid.addEventListener('keydown', (event) => {
+        const activeCell = event.target.closest('.calendar-cell[data-day-key]');
+        if (!activeCell) {
+          return;
+        }
+
+        const dayCells = [...showtimesCalendarGrid.querySelectorAll('.calendar-cell[data-day-key]')];
+        const activeIndex = dayCells.indexOf(activeCell);
+        if (activeIndex < 0) {
+          return;
+        }
+
+        let nextIndex = -1;
+        if (event.key === 'ArrowRight') {
+          nextIndex = activeIndex + 1;
+        }
+        if (event.key === 'ArrowLeft') {
+          nextIndex = activeIndex - 1;
+        }
+        if (event.key === 'ArrowDown') {
+          nextIndex = activeIndex + 7;
+        }
+        if (event.key === 'ArrowUp') {
+          nextIndex = activeIndex - 7;
+        }
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          selectDate(activeCell.getAttribute('data-day-key'));
+          return;
+        }
+
+        if (nextIndex >= 0 && nextIndex < dayCells.length) {
+          event.preventDefault();
+          dayCells[nextIndex].focus();
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        applyView(currentView, false);
+      });
+
+      const savedView = localStorage.getItem(storageKey);
+      const defaultView = getIsMobile() ? 'list' : 'calendar';
+      const preferredView = savedView === 'list' || savedView === 'calendar' ? savedView : defaultView;
+
+      renderCalendar();
+      renderDayDetails();
+      applyListDateHighlight();
+      applyView(preferredView, false);
+    }
   }
 
   const specialEventsCards = document.getElementById('special-events-cards');

@@ -71,12 +71,36 @@
         </div>
       </section>
 
-      <section class="section reveal" aria-labelledby="this-week-title">
+      <section class="section reveal" id="showtimes-module" aria-labelledby="this-week-title">
         <div class="section-head">
           <p class="eyebrow">Current Listings</p>
           <h2 id="this-week-title">This Week At The Plaza</h2>
         </div>
-        <ul class="timeline" id="showtimes-timeline"></ul>
+        <div class="showtimes-controls">
+          <div class="view-toggle" id="showtimes-view-toggle" role="group" aria-label="Showtimes display mode">
+            <button type="button" class="toggle-option" data-view-mode="calendar" aria-pressed="false">Calendar View</button>
+            <button type="button" class="toggle-option" data-view-mode="list" aria-pressed="false">List View</button>
+          </div>
+          <div class="calendar-nav" id="showtimes-calendar-nav" aria-label="Calendar month navigation">
+            <button type="button" class="button secondary" id="calendar-prev-month">Previous</button>
+            <p class="calendar-month-label" id="calendar-month-label">Upcoming Month</p>
+            <button type="button" class="button secondary" id="calendar-next-month">Next</button>
+          </div>
+        </div>
+        <div class="showtimes-calendar-wrap" id="showtimes-calendar-wrap">
+          <div class="calendar-weekdays" aria-hidden="true">
+            <span>Sun</span>
+            <span>Mon</span>
+            <span>Tue</span>
+            <span>Wed</span>
+            <span>Thu</span>
+            <span>Fri</span>
+            <span>Sat</span>
+          </div>
+          <div class="calendar-grid" id="showtimes-calendar-grid" role="grid" aria-label="Showtimes calendar"></div>
+          <div class="day-details" id="showtimes-day-details" aria-live="polite"></div>
+        </div>
+        <ul class="timeline list-view" id="showtimes-timeline"></ul>
       </section>
 
       <section class="section reveal" id="special-events" aria-labelledby="special-events-title">
