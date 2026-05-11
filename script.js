@@ -112,6 +112,79 @@ const getUpcomingEvents = (events) => {
 
 const getUpcomingByKind = (events, kind) => events.filter((event) => event.kind === kind);
 
+const buildEventSchema = (event, ticketUrl) => {
+  const startDate = new Date(event.start);
+  if (Number.isNaN(startDate.getTime())) {
+    return null;
+  }
+
+  const endDate = event.end ? new Date(event.end) : new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+  const urlPath = window.location.pathname.endsWith('showtimes.html') ? 'showtimes' : '';
+  const baseUrl = 'https://www.myplazatheatre.com/';
+  const eventPageUrl = `${baseUrl}${urlPath}`;
+
+  return {
+    '@type': 'Event',
+    name: event.title,
+    description: event.note || 'Screening at the Historic Plaza Theatre.',
+    startDate: startDate.toISOString(),
+    endDate: Number.isNaN(endDate.getTime()) ? undefined : endDate.toISOString(),
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventCategory: event.category,
+    location: {
+      '@type': 'Place',
+      name: 'Historic Plaza Theatre',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: '33 S Main St.',
+        addressLocality: 'Miamisburg',
+        addressRegion: 'OH',
+        postalCode: '45342',
+        addressCountry: 'US'
+      }
+    },
+    organizer: {
+      '@type': 'Organization',
+      name: 'Plaza Theatre',
+      url: baseUrl
+    },
+    image: ['https://static.wixstatic.com/media/1a7a4e_16adef8651e44c68a2e4590d26233c6d~mv2.png'],
+    offers: {
+      '@type': 'Offer',
+      url: ticketUrl,
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock'
+    },
+    url: eventPageUrl
+  };
+};
+
+const injectEventStructuredData = (events, ticketUrl) => {
+  const structuredEvents = events
+    .map((event) => buildEventSchema(event, ticketUrl))
+    .filter((event) => event !== null);
+
+  if (!structuredEvents.length) {
+    return;
+  }
+
+  const graphData = {
+    '@context': 'https://schema.org',
+    '@graph': structuredEvents
+  };
+
+  let scriptNode = document.getElementById('event-structured-data');
+  if (!scriptNode) {
+    scriptNode = document.createElement('script');
+    scriptNode.type = 'application/ld+json';
+    scriptNode.id = 'event-structured-data';
+    document.head.appendChild(scriptNode);
+  }
+
+  scriptNode.textContent = JSON.stringify(graphData);
+};
+
 const isSameLocalDate = (firstDate, secondDate) => {
   return (
     firstDate.getFullYear() === secondDate.getFullYear() &&
@@ -125,6 +198,14 @@ if (scheduleData) {
   const upcomingEvents = getUpcomingEvents(allEvents);
   const upcomingNowShowing = getUpcomingByKind(upcomingEvents, 'now-showing');
   const upcomingSpecialEvents = getUpcomingByKind(upcomingEvents, 'special-event');
+  const currentPagePath = window.location.pathname;
+  const isShowtimesPage = currentPagePath.endsWith('/showtimes.html') || currentPagePath.endsWith('/showtimes');
+
+  if (isShowtimesPage) {
+    injectEventStructuredData([...upcomingNowShowing, ...upcomingSpecialEvents], scheduleData.ticketUrl);
+  } else {
+    injectEventStructuredData([...upcomingNowShowing.slice(0, 3), ...upcomingSpecialEvents.slice(0, 3)], scheduleData.ticketUrl);
+  }
 
   const heroFeatureHeading = document.getElementById('hero-feature-heading');
   const heroFeatureTitle = document.getElementById('hero-feature-title');
