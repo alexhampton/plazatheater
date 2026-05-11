@@ -112,11 +112,43 @@ const getUpcomingEvents = (events) => {
 
 const getUpcomingByKind = (events, kind) => events.filter((event) => event.kind === kind);
 
+const isSameLocalDate = (firstDate, secondDate) => {
+  return (
+    firstDate.getFullYear() === secondDate.getFullYear() &&
+    firstDate.getMonth() === secondDate.getMonth() &&
+    firstDate.getDate() === secondDate.getDate()
+  );
+};
+
 if (scheduleData) {
   const allEvents = flattenSchedule(scheduleData.months);
   const upcomingEvents = getUpcomingEvents(allEvents);
   const upcomingNowShowing = getUpcomingByKind(upcomingEvents, 'now-showing');
   const upcomingSpecialEvents = getUpcomingByKind(upcomingEvents, 'special-event');
+
+  const heroFeatureHeading = document.getElementById('hero-feature-heading');
+  const heroFeatureTitle = document.getElementById('hero-feature-title');
+  const heroFeatureTime = document.getElementById('hero-feature-time');
+  const heroFeatureNote = document.getElementById('hero-feature-note');
+  const heroFeatureCta = document.getElementById('hero-feature-cta');
+
+  if (heroFeatureHeading && heroFeatureTitle && heroFeatureTime && heroFeatureNote && heroFeatureCta) {
+    const flaggedFeaturedEvent = upcomingEvents.find((event) => event.featured === true);
+    const fallbackEvent = upcomingNowShowing[0] || upcomingSpecialEvents[0] || upcomingEvents[0];
+    const heroEvent = flaggedFeaturedEvent || fallbackEvent;
+
+    if (heroEvent) {
+      const heroEventDate = new Date(heroEvent.start);
+      const now = new Date();
+      const isTonight = !Number.isNaN(heroEventDate.getTime()) && isSameLocalDate(heroEventDate, now);
+
+      heroFeatureHeading.textContent = isTonight ? 'Tonight At The Plaza' : 'Featured At The Plaza';
+      heroFeatureTitle.textContent = heroEvent.title;
+      heroFeatureTime.textContent = formatEventSlot(heroEvent.start);
+      heroFeatureNote.textContent = heroEvent.note || 'Doors open 30 minutes before showtime.';
+      heroFeatureCta.href = scheduleData.ticketUrl;
+    }
+  }
 
   const homeNowShowing = document.getElementById('home-now-showing');
 

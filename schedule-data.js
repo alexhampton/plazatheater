@@ -17,7 +17,8 @@ window.plazaSchedule = {
                     title: 'Century of Cinema: Twister (1996)',
                     note: 'Presented by Melissa Kachenmeister.',
                     category: 'Century of Cinema',
-                    kind: 'special-event'
+                    kind: 'special-event',
+                    featured: true
                 },
                 {
                     start: '2026-05-21T16:00:00',
