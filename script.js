@@ -127,6 +127,31 @@ const parseMonthKey = (monthKey) => {
   return { year, month };
 };
 
+const getStartOfWeek = (dateValue) => {
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  start.setDate(start.getDate() - start.getDay());
+  return start;
+};
+
+const formatWeekRangeLabel = (weekStartDate) => {
+  const weekEndDate = new Date(weekStartDate.getFullYear(), weekStartDate.getMonth(), weekStartDate.getDate() + 6);
+  const startLabel = weekStartDate.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric'
+  });
+  const endLabel = weekEndDate.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric'
+  });
+
+  return `${startLabel} - ${endLabel}`;
+};
+
 const buildDayBuckets = (events) => {
   const dayMap = new Map();
   events.forEach((event) => {
@@ -383,6 +408,11 @@ if (scheduleData) {
       }
 
       const getIsMobile = () => window.matchMedia('(max-width: 768px)').matches;
+      const firstUpcomingDate = upcomingNowShowing.length ? new Date(upcomingNowShowing[0].start) : null;
+      const lastUpcomingDate = upcomingNowShowing.length ? new Date(upcomingNowShowing[upcomingNowShowing.length - 1].start) : null;
+      const firstUpcomingWeekStart = firstUpcomingDate ? getStartOfWeek(firstUpcomingDate) : null;
+      const lastUpcomingWeekStart = lastUpcomingDate ? getStartOfWeek(lastUpcomingDate) : null;
+      let currentWeekStartDate = selectedDateKey ? getStartOfWeek(new Date(`${selectedDateKey}T12:00:00`)) : null;
       let currentView = 'list';
 
       const setToggleState = (nextView) => {
@@ -443,12 +473,85 @@ if (scheduleData) {
 
       const selectDate = (dateKey) => {
         selectedDateKey = dateKey;
+        const selectedDate = new Date(`${selectedDateKey}T12:00:00`);
+        if (!Number.isNaN(selectedDate.getTime())) {
+          currentWeekStartDate = getStartOfWeek(selectedDate);
+        }
         renderCalendar();
         renderDayDetails();
         applyListDateHighlight();
       };
 
       const renderCalendar = () => {
+        if (!upcomingNowShowing.length) {
+          calendarMonthLabel.textContent = 'No Upcoming Dates';
+          showtimesCalendarGrid.innerHTML = '<p class="empty-state">No upcoming feature showtimes are posted yet.</p>';
+          prevMonthButton.disabled = true;
+          nextMonthButton.disabled = true;
+          return;
+        }
+
+        const isMobileMode = getIsMobile();
+
+        if (isMobileMode) {
+          showtimesCalendarGrid.classList.add('is-week-mode');
+          showtimesCalendarGrid.classList.remove('is-month-mode');
+
+          if (!currentWeekStartDate) {
+            currentWeekStartDate = getStartOfWeek(new Date(upcomingNowShowing[0].start));
+          }
+
+          calendarMonthLabel.textContent = formatWeekRangeLabel(currentWeekStartDate);
+          const todayKey = toLocalDateKey(new Date());
+          const calendarCells = [];
+
+          for (let dayOffset = 0; dayOffset < 7; dayOffset += 1) {
+            const currentDate = new Date(
+              currentWeekStartDate.getFullYear(),
+              currentWeekStartDate.getMonth(),
+              currentWeekStartDate.getDate() + dayOffset
+            );
+            const dayKey = toLocalDateKey(currentDate);
+            const dayEvents = dayBuckets.get(dayKey) || [];
+            const hasEvents = dayEvents.length > 0;
+            const isSelected = selectedDateKey === dayKey;
+            const isToday = todayKey === dayKey;
+            const labelDate = currentDate.toLocaleDateString(undefined, {
+              weekday: 'long',
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric'
+            });
+            const countLabel = hasEvents ? `${dayEvents.length}` : '0';
+            const countAria = hasEvents
+              ? `${dayEvents.length} ${dayEvents.length === 1 ? 'showtime' : 'showtimes'}`
+              : 'No showtimes';
+
+            calendarCells.push(`
+              <button
+                type="button"
+                class="calendar-cell${hasEvents ? ' has-events' : ''}${isSelected ? ' is-selected' : ''}${isToday ? ' is-today' : ''}"
+                data-day-key="${dayKey}"
+                aria-label="${labelDate}. ${countAria}."
+              >
+                <span class="calendar-day-number">${currentDate.getDate()}</span>
+                <span class="calendar-count">${countLabel}</span>
+              </button>
+            `);
+          }
+
+          showtimesCalendarGrid.setAttribute('aria-label', `Weekly showtimes calendar for ${calendarMonthLabel.textContent}`);
+          showtimesCalendarGrid.innerHTML = calendarCells.join('');
+          prevMonthButton.disabled =
+            !firstUpcomingWeekStart || currentWeekStartDate.getTime() <= firstUpcomingWeekStart.getTime();
+          nextMonthButton.disabled =
+            !lastUpcomingWeekStart || currentWeekStartDate.getTime() >= lastUpcomingWeekStart.getTime();
+          return;
+        }
+
+        showtimesCalendarGrid.classList.remove('is-week-mode');
+        showtimesCalendarGrid.classList.add('is-month-mode');
+
         if (!monthKeys.length) {
           calendarMonthLabel.textContent = 'No Upcoming Dates';
           showtimesCalendarGrid.innerHTML = '<p class="empty-state">No upcoming feature showtimes are posted yet.</p>';
@@ -527,8 +630,56 @@ if (scheduleData) {
         applyListDateHighlight();
       };
 
+      const updateWeekSelection = (weekOffset) => {
+        if (!currentWeekStartDate) {
+          return;
+        }
+
+        const nextWeekStart = new Date(
+          currentWeekStartDate.getFullYear(),
+          currentWeekStartDate.getMonth(),
+          currentWeekStartDate.getDate() + 7 * weekOffset
+        );
+
+        if (firstUpcomingWeekStart && nextWeekStart.getTime() < firstUpcomingWeekStart.getTime()) {
+          return;
+        }
+        if (lastUpcomingWeekStart && nextWeekStart.getTime() > lastUpcomingWeekStart.getTime()) {
+          return;
+        }
+
+        currentWeekStartDate = nextWeekStart;
+
+        const selectedDate = new Date(`${selectedDateKey}T12:00:00`);
+        const selectedInWeek =
+          !Number.isNaN(selectedDate.getTime()) &&
+          selectedDate.getTime() >= currentWeekStartDate.getTime() &&
+          selectedDate.getTime() < currentWeekStartDate.getTime() + 7 * 24 * 60 * 60 * 1000;
+
+        if (!selectedInWeek) {
+          let firstEventInWeekKey = '';
+          for (let dayOffset = 0; dayOffset < 7; dayOffset += 1) {
+            const dayDate = new Date(
+              currentWeekStartDate.getFullYear(),
+              currentWeekStartDate.getMonth(),
+              currentWeekStartDate.getDate() + dayOffset
+            );
+            const dayKey = toLocalDateKey(dayDate);
+            if ((dayBuckets.get(dayKey) || []).length) {
+              firstEventInWeekKey = dayKey;
+              break;
+            }
+          }
+          selectedDateKey = firstEventInWeekKey || toLocalDateKey(currentWeekStartDate);
+        }
+
+        renderCalendar();
+        renderDayDetails();
+        applyListDateHighlight();
+      };
+
       const applyView = (requestedView, persist = true) => {
-        const normalizedView = getIsMobile() ? 'list' : requestedView;
+        const normalizedView = requestedView === 'calendar' ? 'calendar' : 'list';
         currentView = normalizedView;
 
         const showCalendar = normalizedView === 'calendar';
@@ -552,10 +703,18 @@ if (scheduleData) {
       });
 
       prevMonthButton.addEventListener('click', () => {
+        if (getIsMobile()) {
+          updateWeekSelection(-1);
+          return;
+        }
         updateMonthSelection(currentMonthIndex - 1);
       });
 
       nextMonthButton.addEventListener('click', () => {
+        if (getIsMobile()) {
+          updateWeekSelection(1);
+          return;
+        }
         updateMonthSelection(currentMonthIndex + 1);
       });
 
@@ -605,11 +764,18 @@ if (scheduleData) {
       });
 
       window.addEventListener('resize', () => {
+        if (getIsMobile()) {
+          const selectedDate = new Date(`${selectedDateKey}T12:00:00`);
+          if (!Number.isNaN(selectedDate.getTime())) {
+            currentWeekStartDate = getStartOfWeek(selectedDate);
+          }
+        }
+        renderCalendar();
         applyView(currentView, false);
       });
 
       const savedView = localStorage.getItem(storageKey);
-      const defaultView = getIsMobile() ? 'list' : 'calendar';
+      const defaultView = 'calendar';
       const preferredView = savedView === 'list' || savedView === 'calendar' ? savedView : defaultView;
 
       renderCalendar();

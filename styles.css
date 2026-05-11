@@ -412,6 +412,10 @@ h3 {
   gap: 6px;
 }
 
+.calendar-grid.is-week-mode {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
 .calendar-cell {
   min-height: 70px;
   border: 1px solid #d3c5ad;
@@ -794,10 +798,48 @@ h3 {
 }
 
 @media (max-width: 768px) {
-  .view-toggle,
-  .calendar-nav,
+  .showtimes-controls {
+    align-items: stretch;
+  }
+
+  .view-toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .toggle-option {
+    flex: 1;
+  }
+
+  .calendar-nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .calendar-month-label {
+    min-width: 0;
+    font-size: 1.2rem;
+  }
+
   .showtimes-calendar-wrap {
-    display: none !important;
+    padding: 10px;
+  }
+
+  .calendar-weekdays span {
+    font-size: 0.72rem;
+  }
+
+  .calendar-grid {
+    gap: 4px;
+  }
+
+  .calendar-cell {
+    min-height: 52px;
+    padding: 4px;
+  }
+
+  .calendar-count {
+    font-size: 0.68rem;
   }
 }
 
