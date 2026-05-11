@@ -291,6 +291,31 @@ h3 {
   padding: 14px;
 }
 
+.timeline .month-divider {
+  display: block;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 10px 2px 4px;
+}
+
+.timeline .month-divider span {
+  display: inline-block;
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.05em;
+  font-size: 1.35rem;
+  color: var(--brand-red);
+}
+
+.timeline .empty-state {
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  color: var(--ink-soft);
+}
+
 .timeline .slot {
   font-family: "Bebas Neue", sans-serif;
   letter-spacing: 0.04em;
