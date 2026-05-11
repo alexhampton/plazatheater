@@ -75,26 +75,7 @@
           <h2 id="showtimes-title">Now Showing</h2>
           <a href="showtimes.html" class="text-link">See Full Calendar</a>
         </div>
-        <div class="cards" role="list">
-          <article class="show-card" role="listitem">
-            <h3>The Sheep Detectives</h3>
-            <p>Wed - Sat at 4 PM & 7 PM</p>
-            <p>Sun at 1:30 PM</p>
-            <a class="button secondary" href="https://app.formovietickets.com/index.html?id=plazatheatre">Tickets</a>
-          </article>
-          <article class="show-card" role="listitem">
-            <h3>Century of Cinema: Twister (1996)</h3>
-            <p>Wed, May 20 at 7 PM</p>
-            <p>Presented by Melissa Kachenmeister</p>
-            <a class="button secondary" href="https://app.formovietickets.com/index.html?id=plazatheatre">Tickets</a>
-          </article>
-          <article class="show-card" role="listitem">
-            <h3>Loren Willson Series</h3>
-            <p>Wednesdays at 11 AM</p>
-            <p>$1 tickets + free book for each child</p>
-            <a class="button secondary" href="https://www.myplazatheatre.com/loren-willson-series">Learn More</a>
-          </article>
-        </div>
+        <div class="cards" id="home-now-showing" role="list"></div>
       </section>
 
       <section class="section series reveal" id="series" aria-labelledby="series-title">
@@ -203,6 +184,7 @@
       </div>
     </footer>
 
+    <script src="schedule-data.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

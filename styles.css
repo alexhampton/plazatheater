@@ -368,6 +368,25 @@ h3 {
   color: var(--ink-soft);
 }
 
+.event-slot {
+  margin: 0 0 8px;
+  font-weight: 800;
+  color: var(--brand-blue);
+}
+
+.tag {
+  display: inline-block;
+  margin-bottom: 10px;
+  border: 1px solid #d7b884;
+  background: #fff3dd;
+  color: #6c4310;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
 .split-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }

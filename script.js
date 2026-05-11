@@ -53,3 +53,70 @@ if ('IntersectionObserver' in window && revealItems.length > 0) {
 } else {
   revealItems.forEach((item) => item.classList.add('in-view'));
 }
+
+const scheduleData = window.plazaSchedule;
+
+const buildCategoryBadge = (category) => {
+  if (!category) {
+    return '';
+  }
+
+  return `<span class="tag">${category}</span>`;
+};
+
+if (scheduleData) {
+  const homeNowShowing = document.getElementById('home-now-showing');
+
+  if (homeNowShowing) {
+    const featuredItems = scheduleData.nowShowing.slice(0, 3);
+    homeNowShowing.innerHTML = featuredItems
+      .map(
+        (item) => `
+          <article class="show-card" role="listitem">
+            <p class="event-slot">${item.day} | ${item.time}</p>
+            ${buildCategoryBadge(item.category)}
+            <h3>${item.title}</h3>
+            <p>${item.note}</p>
+            <a class="button secondary" href="${scheduleData.ticketUrl}">Tickets</a>
+          </article>
+        `
+      )
+      .join('');
+  }
+
+  const showtimesTimeline = document.getElementById('showtimes-timeline');
+
+  if (showtimesTimeline) {
+    showtimesTimeline.innerHTML = scheduleData.nowShowing
+      .map(
+        (item) => `
+          <li>
+            <span class="slot">${item.day} | ${item.time}</span>
+            <div>
+              ${buildCategoryBadge(item.category)}
+              <h3>${item.title}</h3>
+              <p>${item.note}</p>
+            </div>
+          </li>
+        `
+      )
+      .join('');
+  }
+
+  const specialEventsCards = document.getElementById('special-events-cards');
+
+  if (specialEventsCards) {
+    specialEventsCards.innerHTML = scheduleData.specialEvents
+      .map(
+        (item) => `
+          <article class="show-card">
+            <p class="event-slot">${item.day} | ${item.time}</p>
+            ${buildCategoryBadge(item.category)}
+            <h3>${item.title}</h3>
+            <p>${item.note}</p>
+          </article>
+        `
+      )
+      .join('');
+  }
+}

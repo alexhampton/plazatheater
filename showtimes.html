@@ -60,64 +60,7 @@
           <p class="eyebrow">Current Listings</p>
           <h2 id="this-week-title">This Week At The Plaza</h2>
         </div>
-        <ul class="timeline">
-          <li>
-            <span class="slot">Wednesday 4:00 PM</span>
-            <div>
-              <h3>The Sheep Detectives (2026)</h3>
-              <p>Main feature screening.</p>
-            </div>
-          </li>
-          <li>
-            <span class="slot">Wednesday 7:00 PM</span>
-            <div>
-              <h3>Century of Cinema: Twister (1996)</h3>
-              <p>Hosted feature presentation with local sponsor support.</p>
-            </div>
-          </li>
-          <li>
-            <span class="slot">Thursday 4:00 PM & 7:00 PM</span>
-            <div>
-              <h3>The Sheep Detectives (2026)</h3>
-              <p>Afternoon and evening screenings.</p>
-            </div>
-          </li>
-          <li>
-            <span class="slot">Friday 4:00 PM</span>
-            <div>
-              <h3>The Wizard of Oz</h3>
-              <p>Classic presentation.</p>
-            </div>
-          </li>
-          <li>
-            <span class="slot">Friday 7:00 PM</span>
-            <div>
-              <h3>Mercy (2026)</h3>
-              <p>Evening feature screening.</p>
-            </div>
-          </li>
-          <li>
-            <span class="slot">Saturday 4:00 PM</span>
-            <div>
-              <h3>Mercy (2026)</h3>
-              <p>Weekend matinee.</p>
-            </div>
-          </li>
-          <li>
-            <span class="slot">Saturday 7:00 PM</span>
-            <div>
-              <h3>The Wizard of Oz</h3>
-              <p>Saturday evening classic screening.</p>
-            </div>
-          </li>
-          <li>
-            <span class="slot">Sunday 1:30 PM</span>
-            <div>
-              <h3>The Wizard of Oz</h3>
-              <p>Sunday matinee.</p>
-            </div>
-          </li>
-        </ul>
+        <ul class="timeline" id="showtimes-timeline"></ul>
       </section>
 
       <section class="section reveal" id="special-events" aria-labelledby="special-events-title">
@@ -125,23 +68,7 @@
           <p class="eyebrow">Coming Up</p>
           <h2 id="special-events-title">Special Events</h2>
         </div>
-        <div class="cards">
-          <article class="show-card">
-            <h3>25 Cent Movie</h3>
-            <p>Sat, May 9 at 12:30 PM</p>
-            <p>Pirates of the Caribbean: The Curse of the Black Pearl</p>
-          </article>
-          <article class="show-card">
-            <h3>Kids Series</h3>
-            <p>Wed, June 3 at 11:00 AM</p>
-            <p>The Lion King (1994), $1 ticket and free book.</p>
-          </article>
-          <article class="show-card">
-            <h3>Live Event</h3>
-            <p>Sun, Aug 16 at 7:00 PM</p>
-            <p>Karen Rontowski - The Original Psychic Standup.</p>
-          </article>
-        </div>
+        <div class="cards" id="special-events-cards"></div>
       </section>
     </main>
 
@@ -156,6 +83,7 @@
       </div>
     </footer>
 
+    <script src="schedule-data.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
